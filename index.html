@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>AWS VPC Gateway Endpoint for S3 | Interactive Flow + Advanced Colour</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --cyan: #00ffff;
+            --magenta: #ff66cc;
+            --purple: #7b61ff;
+            --green: #2ecc71;
+            --gold: #f1c40f;
+            --dark-bg: #01060e;
+            --card-bg: rgba(12, 20, 35, 0.75);
+            --border-glow: rgba(0, 255, 255, 0.35);
+            --text-primary: #eef4ff;
+            --text-secondary: #aaccff;
+            --gradient-neon: linear-gradient(135deg, #0ff, #7b61ff, #ff66cc);
+        }
+
+        body {
+            background: linear-gradient(135deg, #020b1a 0%, #00101f 25%, #010918 50%, #001525 75%, #020b1a 100%);
+            background-size: 300% 300%;
+            animation: bgShift 18s ease infinite;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--text-primary);
+            line-height: 1.5;
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+        }
+
+        @keyframes bgShift {
+            0% { background-position: 0% 0%; }
+            25% { background-position: 100% 0%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border-radius: 2.2rem;
+            border: 1px solid var(--border-glow);
+            box-shadow: 0 20px 40px -18px rgba(0,0,0,0.7), 0 0 25px rgba(0,255,255,0.1);
+            padding: 1.8rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(0,255,255,0.6);
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.8), 0 0 35px rgba(0,255,255,0.25);
+            transform: translateY(-3px);
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: var(--gradient-neon);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 8px rgba(0,255,255,0.3);
+        }
+
+        .badge {
+            display: inline-block;
+            background: #0b2b3b;
+            border-radius: 40px;
+            padding: 0.35rem 1.2rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            margin-bottom: 0.8rem;
+            animation: badgePulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { box-shadow: 0 0 5px rgba(0,255,255,0.3); }
+            50% { box-shadow: 0 0 18px rgba(0,255,255,0.7); }
+        }
+
+        hr {
+            border: none;
+            height: 2px;
+            background: linear-gradient(90deg, var(--cyan), var(--magenta), transparent);
+            margin: 1rem 0;
+            border-radius: 2px;
+        }
+
+        .simulator {
+            background: #01060ecc;
+            border-radius: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #2dd4bf;
+            transition: border-color 0.3s;
+        }
+
+        .simulator:hover {
+            border-color: var(--magenta);
+        }
+
+        .sim-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1.4rem;
+            margin-bottom: 1.2rem;
+            color: var(--cyan);
+        }
+
+        .steps-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .step-card {
+            flex: 1 1 320px;
+            background: rgba(0, 10, 20, 0.75);
+            border-radius: 1.8rem;
+            border-left: 6px solid var(--cyan);
+            padding: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1);
+            backdrop-filter: blur(8px);
+        }
+
+        .step-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            background: rgba(0, 30, 50, 0.85);
+            box-shadow: 0 0 25px rgba(0,255,255,0.4);
+            border-left-color: var(--magenta);
+        }
+
+        .step-num {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(145deg, var(--cyan), var(--purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            transition: all 0.3s;
+        }
+
+        .step-card:hover .step-num {
+            background: linear-gradient(145deg, var(--magenta), var(--gold));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .step-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin: 0.5rem 0 0.8rem 0;
+            color: #fff;
+            transition: color 0.2s;
+        }
+
+        .step-card:hover .step-title {
+            color: #e0f0ff;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin: 1.2rem 0;
+            border-radius: 1rem;
+            border: 1px solid rgba(45, 115, 255, 0.25);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0,0,0,0.45);
+            border-radius: 1rem;
+            font-size: 0.85rem;
+        }
+
+        th, td {
+            padding: 0.85rem 1.2rem;
+            border-bottom: 1px solid #2d3e5f;
+            text-align: left;
+            transition: background 0.25s;
+        }
+
+        th {
+            background: linear-gradient(145deg, #0f2f3f, #071f2e);
+            color: var(--cyan);
+            font-weight: 650;
+            letter-spacing: 0.03em;
+        }
+
+        tr:hover td {
+            background: rgba(0, 255, 255, 0.07);
+            color: #fff;
+        }
+
+        pre {
+            background: #060e1c;
+            border-radius: 1.2rem;
+            padding: 1.2rem;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            border: 1px solid rgba(45, 212, 191, 0.35);
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        pre:hover {
+            border-color: var(--magenta);
+            box-shadow: 0 0 20px rgba(255, 102, 204, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 14px;
+            background: #1e2a3a;
+            border: none;
+            color: var(--cyan);
+            cursor: pointer;
+            border-radius: 10px;
+            padding: 5px 14px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            transition: all 0.25s;
+            border: 1px solid transparent;
+        }
+
+        .copy-btn:hover {
+            background: #0a2a3f;
+            border-color: var(--cyan);
+            box-shadow: 0 0 11px rgba(0,255,255,0.6);
+            transform: scale(1.05);
+        }
+
+        .fa, .fas, .far {
+            margin-right: 6px;
+        }
+
+        .glow-text {
+            color: var(--cyan);
+            text-shadow: 0 0 6px rgba(0,255,255,0.8);
+        }
+
+        button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        /* Accordion with smooth height animation */
+        .accordion {
+            background: #07121f;
+            border-radius: 1.2rem;
+            margin: 0.8rem 0;
+            border: 1px solid rgba(45, 180, 255, 0.25);
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+
+        .accordion:hover {
+            border-color: var(--purple);
+        }
+
+        .accordion-header {
+            padding: 1.2rem 1.2rem;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1e3a5f;
+            transition: background 0.25s, color 0.25s;
+            background: rgba(10, 25, 45, 0.5);
+        }
+
+        .accordion-header:hover {
+            background: rgba(20, 45, 75, 0.7);
+            color: #fff;
+        }
+
+        .accordion-header i {
+            transition: transform 0.3s ease;
+            color: var(--cyan);
+        }
+
+        .accordion.active .accordion-header i {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.45s cubic-bezier(0.2, 0.9, 0.4, 1);
+            background: rgba(5, 18, 30, 0.8);
+        }
+
+        .accordion.active .accordion-content {
+            max-height: 600px; /* large enough for any content */
+        }
+
+        .acc-inner {
+            padding: 1.3rem 1.2rem;
+            color: #cfdfef;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3.5rem;
+            font-size: 0.8rem;
+            opacity: 0.8;
+            color: #a0b8d0;
+            letter-spacing: 0.4px;
+        }
+
+        @keyframes ringpulse {
+            0% { stroke-opacity: 0.4; transform: scale(1); }
+            50% { stroke-opacity: 1; transform: scale(1.06); }
+            100% { stroke-opacity: 0.4; transform: scale(1); }
+        }
+
+        .ring-on {
+            animation: ringpulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-5px); }
+        }
+
+        .step-btn {
+            background: #1e2a3a;
+            border: 1px solid var(--cyan);
+            border-radius: 40px;
+            padding: 6px 18px;
+            color: #cbd5e6;
+            font-weight: 600;
+            transition: all 0.25s;
+            cursor: pointer;
+            letter-spacing: 0.4px;
+        }
+
+        .step-btn:hover {
+            background: #0a2f4a;
+            border-color: var(--magenta);
+            box-shadow: 0 0 14px rgba(255,102,204,0.6);
+            transform: scale(1.05);
+            color: white;
+        }
+
+        .step-btn.active {
+            background: #0f3a55;
+            border-color: var(--cyan);
+            box-shadow: 0 0 20px rgba(0,255,255,0.8);
+            color: white;
+            font-weight: 700;
+            transform: scale(1.03);
+        }
+
+        #reset-animation {
+            background: #1e2a3a;
+            border-radius: 60px;
+            padding: 8px 24px;
+            color: var(--cyan);
+            border: 1px solid cyan;
+            font-weight: 600;
+            transition: all 0.25s;
+        }
+
+        #reset-animation:hover {
+            background: #0a2f4a;
+            border-color: var(--magenta);
+            box-shadow: 0 0 18px rgba(255,102,204,0.7);
+            transform: scale(1.04);
+            color: white;
+        }
+
+        .status-panel {
+            margin-top: 1.2rem;
+            background: #0a0f1f;
+            border-radius: 1rem;
+            padding: 0.8rem 1.3rem;
+            border-left: 5px solid cyan;
+            transition: border-left-color 0.3s;
+        }
+
+        @media (max-width: 760px) {
+            body { padding: 1rem; }
+            h1 { font-size: 2rem; }
+            .step-card { flex: 1 1 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- header -->
+    <div class="glass-card" style="text-align: center;">
+        <div class="badge"><i class="fas fa-cloud-upload-alt"></i> VPC Gateway Endpoint · S3</div>
+        <h1>⚡ Private S3 Access from Private Subnet</h1>
+        <p style="max-width: 800px; margin: 0.8rem auto;">Connect EC2 instances in private subnets directly to Amazon S3 — no Internet Gateway, no NAT, no public IPs. All traffic stays on AWS backbone and the endpoint is completely free.</p>
+        <div style="display: flex; gap: 20px; justify-content: center; margin-top: 1rem; flex-wrap: wrap;">
+            <span><i class="fas fa-check-circle" style="color:#2ecc71;"></i> Prefix list routing</span>
+            <span><i class="fas fa-route"></i> Gateway Endpoint (free)</span>
+            <span><i class="fas fa-shield-alt"></i> IAM + bucket policies</span>
+        </div>
+    </div>
+
+    <!-- ==================== INTERACTIVE ANIMATED SIMULATOR ==================== -->
+    <div class="glass-card simulator">
+        <div class="sim-title">
+            <i class="fas fa-play-circle" style="color:#0ff; font-size: 2rem;"></i>
+            <span>✨ LIVE TRAFFIC SIMULATOR ✨</span>
+        </div>
+        <div id="animated-viz" style="margin-bottom: 1.2rem; background: radial-gradient(circle at 30% 40%, #010814, #000000); border-radius: 1.5rem; padding: 10px;">
+            <svg id="vsvg" viewBox="0 0 860 540" style="width:100%; height:auto; border-radius: 1rem; display: block;">
+                <defs>
+                    <marker id="arrowCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
+                        <path d="M 0 1 L 8 5 L 0 9" fill="none" stroke="#0ff" stroke-width="1.3"/>
+                    </marker>
+                    <filter id="neonGlow" x="-40%" y="-40%" width="180%" height="180%">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="3.5"/>
+                        <feMerge><feMergeNode in="offsetBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                </defs>
+                <pattern id="grid" width="25" height="25" patternUnits="userSpaceOnUse"><path d="M 25 0 L 0 0 0 25" fill="none" stroke="#1f3a5f" stroke-width="0.35" opacity="0.45"/></pattern>
+                <rect width="100%" height="100%" fill="url(#grid)"/>
+
+                <!-- Internet + IGW -->
+                <circle cx="200" cy="50" r="24" fill="none" stroke="#0ff" stroke-width="1.4" stroke-dasharray="4 4"/>
+                <text x="200" y="85" text-anchor="middle" fill="#c0ffff" font-size="10" font-weight="500">INTERNET</text>
+                <line x1="200" y1="72" x2="200" y2="92" stroke="#0ff" stroke-width="1.3" marker-end="url(#arrowCyan)"/>
+                <rect x="164" y="92" width="72" height="30" rx="9" fill="#0a1a2a" stroke="#0ff" stroke-width="1.2"/>
+                <text x="200" y="110" text-anchor="middle" fill="#0ff" font-weight="bold" font-size="12">IGW</text>
+
+                <!-- VPC-A -->
+                <rect x="25" y="140" width="530" height="360" rx="20" fill="#10203390" stroke="#28e1ff" stroke-width="1.2"/>
+                <text x="40" y="164" fill="#ffffff" font-weight="700" font-size="13">VPC-A · Mumbai (ap-south-1) · 10.100.0.0/16</text>
+                <text x="40" y="180" fill="#aaccff" font-size="10">DNS resolution + hostnames: ENABLED (required for endpoint)</text>
+
+                <!-- Public subnet -->
+                <rect x="40" y="195" width="330" height="105" rx="12" fill="#10314b" stroke="#2dd4bf" fill-opacity="0.7"/>
+                <text x="52" y="218" fill="#bff" font-weight="bold">🔓 Public subnet (10.100.0.0/24)</text>
+                <rect x="120" y="238" width="150" height="56" rx="10" fill="#1e4a6e" stroke="#0ff" stroke-width="1.2"/>
+                <text x="195" y="258" text-anchor="middle" fill="#fff" font-weight="bold" font-size="12">EC2-A (Bastion)</text>
+                <text x="195" y="278" text-anchor="middle" fill="#bbffdd" font-size="9">Public + Private IP</text>
+
+                <!-- Private subnet -->
+                <rect x="40" y="305" width="330" height="155" rx="12" fill="#0f2a3a" stroke="#f76" fill-opacity="0.7"/>
+                <text x="52" y="328" fill="#fb9" font-weight="bold">🔒 Private subnet (10.100.11.0/24)</text>
+                <rect x="120" y="345" width="150" height="65" rx="10" fill="#1e4a6e" stroke="#f76" stroke-width="1.2"/>
+                <text x="195" y="368" text-anchor="middle" fill="#fff" font-weight="bold" font-size="12">EC2-B</text>
+                <text x="195" y="388" text-anchor="middle" fill="#bbffdd" font-size="9">IAM: S3ReadOnly</text>
+                <text x="195" y="404" text-anchor="middle" fill="#9bbdff" font-size="8">Private IP only</text>
+
+                <!-- Gateway Endpoint (S3) -->
+                <rect x="580" y="345" width="145" height="85" rx="14" fill="#0f172a" stroke="#0ff" stroke-width="2.2" stroke-dasharray="6 5"/>
+                <text x="652" y="372" text-anchor="middle" fill="#0ff" font-weight="bold" font-size="11">VPC Gateway</text>
+                <text x="652" y="390" text-anchor="middle" fill="#0ff" font-weight="bold" font-size="11">Endpoint (S3)</text>
+                <text x="652" y="408" text-anchor="middle" fill="#88aaff" font-size="9">pl-xxxx → vpce-xxxx</text>
+
+                <!-- S3 bucket -->
+                <rect x="760" y="345" width="135" height="85" rx="16" fill="#1b4d2e" stroke="#2ecc71" stroke-width="1.6"/>
+                <text x="827" y="372" text-anchor="middle" fill="#caffdd" font-weight="800" font-size="13">Amazon S3</text>
+                <text x="827" y="392" text-anchor="middle" fill="#ccffdd" font-size="10">my-bucket</text>
+                <text x="827" y="412" text-anchor="middle" fill="#aaf0cc" font-size="9">ap-south-1</text>
+
+                <!-- Route table badge -->
+                <g id="rt-box" opacity="0">
+                    <rect x="40" y="474" width="500" height="38" rx="9" fill="#0f1e2c" stroke="#0ff" stroke-width="0.9"/>
+                    <text x="56" y="492" fill="#0ff" font-size="9" font-weight="bold"><i class="fas fa-table-list"></i> Private-RT: 10.100.0.0/16 → local &nbsp; pl-xxxx (S3 prefix) → vpce-xxxx (Gateway Endpoint)</text>
+                </g>
+
+                <!-- Animation paths -->
+                <path id="flow-pub" d="M200,120 L200,235" fill="none" stroke="none"/>
+                <path id="flow-b2b" d="M195,290 L195,345" fill="none" stroke="none"/>
+                <path id="flow-fail" d="M270,378 L630,378" fill="none" stroke="none"/>
+                <path id="flow-peered" d="M270,378 L650,378 L760,378" fill="none" stroke="none"/>
+                <path id="flow-back" d="M760,378 L650,378 L270,378" fill="none" stroke="none"/>
+
+                <circle id="gw-ring" cx="652" cy="378" r="55" fill="none" stroke="#ff66cc" stroke-width="2.5" stroke-dasharray="6 5" opacity="0"/>
+                <g id="fail-x" opacity="0">
+                    <circle cx="495" cy="378" r="17" fill="#c62828" fill-opacity="0.95" stroke="white" stroke-width="1.6"/>
+                    <text x="495" y="382" text-anchor="middle" fill="white" font-weight="900" font-size="20">✕</text>
+                </g>
+            </svg>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; align-items: center;">
+            <div class="step-buttons" id="step-buttons" style="display: flex; gap: 10px; flex-wrap: wrap;"></div>
+            <button id="reset-animation"><i class="fas fa-sync-alt"></i> Reset</button>
+        </div>
+        <div class="status-panel" id="statusPanel">
+            <div id="statusMsg" style="font-weight: 500;">✨ Step 1 — SSH to EC2-A (bastion) from your laptop.</div>
+        </div>
+    </div>
+
+    <!-- ==================== STEP-BY-STEP CARDS ==================== -->
+    <div class="steps-grid">
+        <div class="step-card"><div class="step-num">01</div><div class="step-title"><i class="fas fa-vr-cardboard"></i> Create VPC & IAM</div><p>VPC-A: <code>10.100.0.0/16</code> with public/private subnets. IAM role <code>AmazonS3ReadOnlyAccess</code> for EC2‑B.</p></div>
+        <div class="step-card"><div class="step-num">02</div><div class="step-title"><i class="fas fa-diagram-project"></i> Subnets & Route Tables</div><p>Public subnet <code>10.100.0.0/24</code> (IGW route). Private subnet <code>10.100.11.0/24</code> (no default route).</p></div>
+        <div class="step-card"><div class="step-num">03</div><div class="step-title"><i class="fas fa-microchip"></i> Launch EC2 instances</div><p>EC2‑A (bastion, public IP). EC2‑B (private, attach IAM role). No public IP on EC2‑B.</p></div>
+        <div class="step-card"><div class="step-num">04</div><div class="step-title"><i class="fas fa-plug"></i> Create Gateway Endpoint</div><p>VPC → Endpoints → <code>com.amazonaws.ap-south-1.s3</code> (Gateway). Attach to private route table → prefix list route added automatically.</p></div>
+    </div>
+
+    <!-- Security & IAM tables -->
+    <div class="glass-card">
+        <h3><i class="fas fa-shield-haltered"></i> Security & IAM Configuration</h3>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Resource</th><th>Type</th><th>Details</th></tr></thead>
+                <tbody>
+                    <tr><td>EC2-A Security Group</td><td>Inbound</td><td>SSH (22) from <code>0.0.0.0/0</code> (or your IP)</td></tr>
+                    <tr><td>EC2-B Security Group</td><td>Inbound</td><td>SSH (22) from <code>10.100.0.0/16</code></td></tr>
+                    <tr><td>EC2-B IAM Role</td><td>Policy</td><td><code>AmazonS3ReadOnlyAccess</code> (or custom)</td></tr>
+                    <tr><td>S3 Bucket Policy (optional)</td><td>Condition</td><td><code>"aws:sourceVpce": "vpce-xxxxx"</code></td></tr>
+                </tbody>
+            </table>
+        </div>
+        <h3 style="margin-top: 1.8rem;"><i class="fas fa-route"></i> Route Tables (after endpoint creation)</h3>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Route Table</th><th>Destination</th><th>Target</th></tr></thead>
+                <tbody>
+                    <tr><td>VPC-A-Public-RT</td><td><code>0.0.0.0/0</code></td><td>IGW</td></tr>
+                    <tr><td>VPC-A-Private-RT</td><td><code>10.100.0.0/16</code></td><td>local</td></tr>
+                    <tr><td></td><td><code>pl-xxxxxx</code> (S3 prefix list)</td><td><code>vpce-xxxxx</code> (Gateway Endpoint)</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Commands -->
+    <div class="glass-card">
+        <h3><i class="fas fa-terminal"></i> SSH Chain & S3 Commands</h3>
+        <div style="position: relative;">
+            <pre id="code1"><code># Connect from your laptop to EC2-A (bastion)
+ssh -A ec2-user@&lt;EC2-A-Public-IP&gt;
+
+# From EC2-A, SSH to EC2-B (private subnet)
+ssh ec2-user@10.100.11.x
+
+# Try S3 access BEFORE Gateway Endpoint (fails)
+aws s3 ls s3://my-bucket/
+aws s3 cp s3://my-bucket/test.txt ./
+# Expected: timeout / error (no route to S3)</code></pre>
+            <button class="copy-btn" data-clipboard="#code1"><i class="far fa-copy"></i> Copy</button>
+        </div>
+        <div style="position: relative; margin-top: 1.4rem;">
+            <pre id="code2"><code># AFTER creating Gateway Endpoint (route table auto-updated)
+aws s3 ls s3://my-bucket/
+aws s3 cp s3://my-bucket/test.txt ./
+# Success! Traffic goes through Gateway Endpoint (AWS internal backbone)</code></pre>
+            <button class="copy-btn" data-clipboard="#code2"><i class="far fa-copy"></i> Copy</button>
+        </div>
+    </div>
+
+    <!-- Troubleshooting accordion -->
+    <div class="glass-card">
+        <h3><i class="fas fa-bug"></i> Troubleshooting & Best Practices</h3>
+        <div class="accordion" id="acc1">
+            <div class="accordion-header">❌ S3 access still failing after endpoint? <i class="fas fa-chevron-down"></i></div>
+            <div class="accordion-content"><div class="acc-inner">✔️ Verify the private route table contains the prefix list route (<code>pl-xxxx</code>) targeting the Gateway Endpoint.<br>✔️ Ensure EC2-B has the IAM role attached (S3 read permissions).<br>✔️ Check that you are using the same region for endpoint and S3 bucket.<br>✔️ If bucket policy exists, ensure it allows <code>aws:sourceVpce</code> condition.</div></div>
+        </div>
+        <div class="accordion" id="acc2">
+            <div class="accordion-header">🔑 SSH from EC2-A to EC2-B permission denied <i class="fas fa-chevron-down"></i></div>
+            <div class="accordion-content"><div class="acc-inner">➜ Use SSH agent forwarding (<code>ssh -A</code>) or copy the .pem key to EC2-A.<br>➜ Verify EC2-B security group allows SSH from VPC-A CIDR (<code>10.100.0.0/16</code>).</div></div>
+        </div>
+        <div class="accordion" id="acc3">
+            <div class="accordion-header">💰 Why Gateway Endpoint is cost‑effective? <i class="fas fa-chevron-down"></i></div>
+            <div class="accordion-content"><div class="acc-inner">Gateway Endpoints are <strong>free</strong> (no hourly charge). Replaces NAT Gateway for S3 access – saves ~$35/month per AZ plus data transfer costs. Perfect for private subnets that only need S3/DynamoDB.</div></div>
+        </div>
+    </div>
+
+    <!-- Key concepts -->
+    <div class="glass-card">
+        <h3><i class="fas fa-graduation-cap"></i> Key Concepts Recap</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 1.2rem;">
+            <div><i class="fas fa-link glow-text"></i> <strong>Gateway Endpoint</strong><br>Route table entry to S3 (prefix list), no public IP needed.</div>
+            <div><i class="fas fa-road glow-text"></i> <strong>Prefix List</strong><br>Automatically updates with S3 IP ranges – no manual CIDR maintenance.</div>
+            <div><i class="fas fa-table-list glow-text"></i> <strong>No NAT required</strong><br>Traffic never leaves AWS backbone, lower latency and cost.</div>
+            <div><i class="fas fa-ip glow-text"></i> <strong>IAM + Bucket Policy</strong><br>Combine IAM roles and endpoint policies for defense in depth.</div>
+            <div><i class="fas fa-user-secret glow-text"></i> <strong>Zero internet egress</strong><br>Private subnets stay private, no data exposure to public internet.</div>
+        </div>
+    </div>
+
+    <!-- Cleanup -->
+    <div class="glass-card" style="text-align: center;">
+        <i class="fas fa-trash-alt"></i> <strong>Clean‑up</strong> — Terminate EC2 instances, delete Gateway Endpoint, delete VPC and S3 bucket. Gateway Endpoint itself has no ongoing cost, but EC2 instances incur charges.
+    </div>
+    <footer>🚀 built with neon & animations · AWS VPC Gateway Endpoint for S3 — interactive traffic flow simulator. Click steps to watch private S3 access come alive.</footer>
+</div>
+
+<script>
+    (function() {
+        let activeStep = 0;
+        let animFrame = null;
+        const svg = document.getElementById('vsvg');
+        const rtBox = document.getElementById('rt-box');
+        const gwRing = document.getElementById('gw-ring');
+        const failX = document.getElementById('fail-x');
+
+        const stepsData = [
+            { name: "① SSH → EC2-A", msg: "✅ Step 1 — Your laptop → Internet → IGW → EC2‑A (public subnet). EC2‑A is the bastion host.", type: "ok", flowType: "pub" },
+            { name: "② EC2-A → EC2-B", msg: "✅ Step 2 — SSH from EC2‑A to EC2‑B (private 10.100.11.x). EC2‑B has S3ReadOnly IAM role.", type: "ok", flowType: "b2b" },
+            { name: "③ S3 download fails", msg: "❌ Step 3 — 'aws s3 cp' fails! Private subnet has no route to S3 (no 0.0.0.0/0, no endpoint).", type: "err", flowType: "fail" },
+            { name: "④ Create GW Endpoint", msg: "🔧 Step 4 — Create Gateway Endpoint for S3, attach to private route table → prefix list route added automatically.", type: "tip", flowType: "activate" },
+            { name: "⑤ S3 download works!", msg: "✅ Step 5 — 'aws s3 cp' succeeds! Packets flow EC2‑B → Gateway Endpoint → S3 (AWS internal network).", type: "ok", flowType: "peered" }
+        ];
+
+        function resetVisuals() {
+            if (animFrame) cancelAnimationFrame(animFrame);
+            if (rtBox) rtBox.setAttribute('opacity', '0');
+            if (gwRing) gwRing.setAttribute('opacity', '0');
+            if (failX) failX.setAttribute('opacity', '0');
+            document.querySelectorAll('.packet-anim').forEach(p => p.remove());
+        }
+
+        function animatePacket(pathId, color, duration = 1100, repeat = false, onComplete = null) {
+            const path = document.getElementById(pathId);
+            if (!path) return;
+            const len = path.getTotalLength();
+            if (len === 0) return;
+            let active = true;
+            const start = performance.now();
+            const packet = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            packet.setAttribute("r", "8");
+            packet.setAttribute("fill", color);
+            packet.setAttribute("stroke", "white");
+            packet.setAttribute("stroke-width", "1.4");
+            packet.setAttribute("filter", "url(#neonGlow)");
+            packet.classList.add("packet-anim");
+            svg.appendChild(packet);
+            function step(now) {
+                if (!active) return;
+                let t = Math.min(1, (now - start) / duration);
+                let pt = path.getPointAtLength(t * len);
+                packet.setAttribute("cx", pt.x);
+                packet.setAttribute("cy", pt.y);
+                if (t < 1) {
+                    animFrame = requestAnimationFrame(step);
+                } else {
+                    if (repeat) {
+                        packet.remove();
+                        animatePacket(pathId, color, duration, true, onComplete);
+                    } else {
+                        packet.remove();
+                        if (onComplete) onComplete();
+                    }
+                }
+            }
+            animFrame = requestAnimationFrame(step);
+            return () => { active = false; if(packet.parentNode) packet.remove(); };
+        }
+
+        function startFlow(flowType) {
+            resetVisuals();
+            if (flowType === "pub") {
+                animatePacket("flow-pub", "#2ecc71", 1000, true);
+            } else if (flowType === "b2b") {
+                animatePacket("flow-b2b", "#00e6b8", 1100, true);
+            } else if (flowType === "fail") {
+                animatePacket("flow-fail", "#e74c3c", 800, false, () => {
+                    if (failX) failX.setAttribute('opacity', '1');
+                    setTimeout(() => { if (failX) failX.setAttribute('opacity', '0'); }, 700);
+                });
+            } else if (flowType === "activate") {
+                if (rtBox) rtBox.setAttribute('opacity', '1');
+                if (gwRing) { gwRing.setAttribute('opacity', '1'); gwRing.classList.add('ring-on'); }
+                setTimeout(() => { if(gwRing) gwRing.classList.remove('ring-on'); }, 1800);
+            } else if (flowType === "peered") {
+                if (rtBox) rtBox.setAttribute('opacity', '1');
+                if (gwRing) gwRing.setAttribute('opacity', '1');
+                animatePacket("flow-peered", "#1eff9c", 1300, true);
+                setTimeout(() => {
+                    animatePacket("flow-back", "#1eff9c", 1300, true);
+                }, 800);
+            }
+        }
+
+        function setStep(index) {
+            if (index < 0 || index >= stepsData.length) return;
+            activeStep = index;
+            document.querySelectorAll('.step-btn').forEach((btn,i) => {
+                if (i === index) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            const step = stepsData[index];
+            const panelDiv = document.getElementById('statusPanel');
+            panelDiv.style.borderLeftColor = step.type === 'err' ? '#e74c3c' : (step.type === 'tip' ? '#f1c40f' : '#0ff');
+            document.getElementById('statusMsg').innerHTML = step.msg;
+            startFlow(step.flowType);
+        }
+
+        const btnContainer = document.getElementById('step-buttons');
+        stepsData.forEach((step, idx) => {
+            const btn = document.createElement('button');
+            btn.className = `step-btn ${idx === 0 ? 'active' : ''}`;
+            btn.innerText = step.name;
+            btn.addEventListener('click', () => setStep(idx));
+            btnContainer.appendChild(btn);
+        });
+        document.getElementById('reset-animation').addEventListener('click', () => {
+            resetVisuals();
+            setStep(activeStep);
+        });
+        setStep(0);
+    })();
+
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-clipboard');
+            const codeElem = document.querySelector(targetId);
+            if (codeElem) {
+                const text = codeElem.innerText;
+                navigator.clipboard.writeText(text);
+                this.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                setTimeout(() => this.innerHTML = '<i class="far fa-copy"></i> Copy', 1500);
+            }
+        });
+    });
+
+    document.querySelectorAll('.accordion-header').forEach(header => {
+        header.addEventListener('click', function() {
+            this.parentElement.classList.toggle('active');
+        });
+    });
+</script>
+</body>
+</html>
